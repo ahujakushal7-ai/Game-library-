@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gamelibrary.local/schemas/games.json",
+  "title": "GameLibrary",
+  "description": "Catalog of aggregated games for the desktop launcher.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "title", "platform", "coverUrl", "lastPlayed"],
+    "properties": {
+      "id": { "type": "string", "minLength": 1 },
+      "title": { "type": "string", "minLength": 1 },
+      "platform": { "type": "string", "enum": ["steam", "epic", "ps5"] },
+      "coverUrl": { "type": "string" },
+      "lastPlayed": {
+        "type": ["string", "null"],
+        "description": "ISO-8601 timestamp of the last play session, or null if never played."
+      },
+      "steamAppId": { "type": "string" },
+      "epicAppName": { "type": "string" },
+      "launchUri": {
+        "type": "string",
+        "description": "Optional explicit URI. When omitted, the app builds a platform default."
+      }
+    }
+  }
+}
