@@ -65,27 +65,40 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return withUser(authUserFromSupabase(data.user));
 }
 
+async function functionErrorMessage(error: { message: string; context?: Response }): Promise<string> {
+  if (error.context) {
+    try {
+      const body = (await error.context.clone().json()) as { error?: string };
+      if (body.error) {
+        return body.error;
+      }
+    } catch {
+      // Fall through to the default Functions error.
+    }
+  }
+  if (/rate limit/i.test(error.message)) {
+    return "Too many signup emails were sent. Try again in about an hour, or use Log in if you already have an account.";
+  }
+  return error.message;
+}
+
 export async function signUpWithEmail(
   email: string,
   password: string,
   displayName: string,
 ): Promise<{ snapshot: Snapshot | null; needsEmailConfirm: boolean }> {
   const client = requireSupabase();
-  const { data, error } = await client.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { full_name: displayName.trim() },
-      emailRedirectTo: window.location.origin,
-    },
+  const { data, error } = await client.functions.invoke("signup-email", {
+    body: { email, password, displayName: displayName.trim() },
   });
   if (error) {
-    throw error;
+    throw new Error(await functionErrorMessage(error));
   }
-  if (!data.session || !data.user) {
-    return { snapshot: null, needsEmailConfirm: true };
+  const payload = data as { error?: string; ok?: boolean } | null;
+  if (payload?.error) {
+    throw new Error(payload.error);
   }
-  return { snapshot: withUser(authUserFromSupabase(data.user)), needsEmailConfirm: false };
+  return { snapshot: await signInWithEmail(email, password), needsEmailConfirm: false };
 }
 
 export async function signOutSupabase(): Promise<void> {
