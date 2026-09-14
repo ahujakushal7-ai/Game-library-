@@ -1281,12 +1281,15 @@ dependencies = [
 name = "game-library"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
  "env_logger",
+ "getrandom 0.2.17",
  "log",
  "reqwest 0.12.28",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
