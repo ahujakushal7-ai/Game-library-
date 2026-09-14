@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import catalog from "../data/games.json";
 import { emptySnapshot, type AuthUser, type Game, type Snapshot } from "../types/game";
+import { restoreSupabaseUser, signOutSupabase } from "./supabaseAuth";
 
 const PREVIEW_KEY = "vault-preview-snapshot";
 
@@ -39,10 +40,14 @@ async function call<T>(command: string, args?: Record<string, unknown>): Promise
 }
 
 export async function getSnapshot(): Promise<Snapshot> {
-  if (!isTauri()) {
-    return readPreview();
+  const snapshot = !isTauri() ? readPreview() : await call<Snapshot>("get_snapshot");
+  if (!snapshot.user) {
+    const supabaseUser = await restoreSupabaseUser();
+    if (supabaseUser) {
+      snapshot.user = supabaseUser;
+    }
   }
-  return call<Snapshot>("get_snapshot");
+  return snapshot;
 }
 
 export async function googleLogin(clientId?: string): Promise<Snapshot> {
@@ -60,6 +65,7 @@ export async function googleLogin(clientId?: string): Promise<Snapshot> {
 export const saveGoogleClientId = (clientId: string) => call<void>("save_google_client_id", { clientId });
 
 export async function signOut(): Promise<Snapshot> {
+  await signOutSupabase();
   if (!isTauri()) {
     return writePreview(emptySnapshot());
   }

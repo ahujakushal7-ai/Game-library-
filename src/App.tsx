@@ -4,8 +4,9 @@ import { AccountsPanel } from "./components/AccountsPanel";
 import { GameGrid } from "./components/GameGrid";
 import { GameList } from "./components/GameList";
 import { LibraryConnectPrompt } from "./components/LibraryConnectPrompt";
+import { LoginPage } from "./components/LoginPage";
 import { Sidebar } from "./components/Sidebar";
-import { SignInScreen } from "./components/SignInScreen";
+import { SignupPage } from "./components/SignupPage";
 import { Toast } from "./components/Toast";
 import { TopBar } from "./components/TopBar";
 import {
@@ -25,6 +26,7 @@ import {
   steamOpenApiKeyPage,
   steamSaveApiKey,
 } from "./lib/accounts";
+import { signInWithEmail, signUpWithEmail } from "./lib/supabaseAuth";
 import { filterAndSortGames } from "./lib/catalog";
 import { launchGame } from "./lib/launch";
 import {
@@ -62,6 +64,7 @@ export default function App() {
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; tone: "info" | "error" } | null>(null);
+  const [authPage, setAuthPage] = useState<"login" | "signup">("login");
 
   const user = snapshot.user ?? null;
   const connected =
@@ -135,50 +138,75 @@ export default function App() {
   }
 
   if (!user) {
+    const providerProps = {
+      busy,
+      onGoogle: (clientId: string) =>
+        run("google", async () => {
+          notify("Complete Google sign-in in your browser...");
+          const next = await googleLogin(clientId);
+          notify(`Signed in as ${next.user?.displayName ?? "Google"}`);
+          return next;
+        }),
+      onEpicStart: () =>
+        run("epic", async () => {
+          await epicBeginLogin();
+          notify("Sign in with Epic, then paste authorizationCode.");
+        }),
+      onEpicComplete: (code: string) =>
+        run("epic", async () => {
+          const next = await epicCompleteLogin(code);
+          notify(`Signed in with Epic as ${next.user?.displayName ?? "Epic"}`);
+          return next;
+        }),
+      onPsnStart: () =>
+        run("psn", async () => {
+          await psnBeginLogin();
+          notify("Sign in on PlayStation.com, then paste your NPSSO token.");
+        }),
+      onPsnNpssoPage: () =>
+        psnOpenNpssoPage().catch((error: unknown) =>
+          notify(error instanceof Error ? error.message : "Could not open NPSSO page.", "error"),
+        ),
+      onPsnComplete: (token: string) =>
+        run("psn", async () => {
+          const next = await psnCompleteLogin(token);
+          notify(`Signed in with PlayStation as ${next.user?.displayName ?? "PSN"}`);
+          return next;
+        }),
+    };
+
     return (
       <>
-        <SignInScreen
-          busy={busy}
-          onGoogle={(clientId) =>
-            run("google", async () => {
-              notify("Complete Google sign-in in your browser...");
-              const next = await googleLogin(clientId);
-              notify(`Signed in as ${next.user?.displayName ?? "Google"}`);
-              return next;
-            })
-          }
-          onEpicStart={() =>
-            run("epic", async () => {
-              await epicBeginLogin();
-              notify("Sign in with Epic, then paste authorizationCode.");
-            })
-          }
-          onEpicComplete={(code) =>
-            run("epic", async () => {
-              const next = await epicCompleteLogin(code);
-              notify(`Signed in with Epic as ${next.user?.displayName ?? "Epic"}`);
-              return next;
-            })
-          }
-          onPsnStart={() =>
-            run("psn", async () => {
-              await psnBeginLogin();
-              notify("Sign in on PlayStation.com, then paste your NPSSO token.");
-            })
-          }
-          onPsnNpssoPage={() =>
-            psnOpenNpssoPage().catch((error: unknown) =>
-              notify(error instanceof Error ? error.message : "Could not open NPSSO page.", "error"),
-            )
-          }
-          onPsnComplete={(token) =>
-            run("psn", async () => {
-              const next = await psnCompleteLogin(token);
-              notify(`Signed in with PlayStation as ${next.user?.displayName ?? "PSN"}`);
-              return next;
-            })
-          }
-        />
+        {authPage === "signup" ? (
+          <SignupPage
+            busy={busy}
+            onOpenLogin={() => setAuthPage("login")}
+            onSignup={(name, email, password) =>
+              run("signup", async () => {
+                const result = await signUpWithEmail(email, password, name);
+                if (result.needsEmailConfirm) {
+                  notify("Check your email to confirm your account, then log in.");
+                  setAuthPage("login");
+                  return;
+                }
+                notify(`Welcome to VAULT, ${result.snapshot?.user?.displayName ?? name}`);
+                return result.snapshot ?? undefined;
+              })
+            }
+          />
+        ) : (
+          <LoginPage
+            {...providerProps}
+            onOpenSignup={() => setAuthPage("signup")}
+            onEmailLogin={(email, password) =>
+              run("email", async () => {
+                const next = await signInWithEmail(email, password);
+                notify(`Signed in as ${next.user?.displayName ?? email}`);
+                return next;
+              })
+            }
+          />
+        )}
         {toast ? <Toast message={toast.message} tone={toast.tone} /> : null}
       </>
     );
