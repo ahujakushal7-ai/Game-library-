@@ -7,6 +7,7 @@ interface LoginPageProps {
   onEmailLogin: (email: string, password: string) => void;
   onOpenSignup: () => void;
   onGoogle: (clientId: string) => void;
+  onSteam?: () => void;
   onEpicStart: () => void;
   onEpicComplete: (code: string) => void;
   onPsnStart: () => void;
@@ -19,6 +20,7 @@ export function LoginPage({
   onEmailLogin,
   onOpenSignup,
   onGoogle,
+  onSteam,
   onEpicStart,
   onEpicComplete,
   onPsnStart,
@@ -77,6 +79,7 @@ export function LoginPage({
       <AuthProviders
         busy={busy}
         onGoogle={onGoogle}
+        onSteam={onSteam}
         onEpicStart={onEpicStart}
         onEpicComplete={onEpicComplete}
         onPsnStart={onPsnStart}
