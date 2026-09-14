@@ -22,7 +22,12 @@
       "launchUri": {
         "type": "string",
         "description": "Optional explicit URI. When omitted, the app builds a platform default."
-      }
+      },
+      "genre": { "type": "string" },
+      "installed": { "type": "boolean" },
+      "playtimeHours": { "type": "number" },
+      "rating": { "type": ["number", "null"] },
+      "trophies": { "type": "string" }
     }
   }
 }

@@ -5,7 +5,11 @@
     "platform": "steam",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/library_600x900.jpg",
     "lastPlayed": "2026-09-12T21:14:00.000Z",
-    "steamAppId": "1086940"
+    "steamAppId": "1086940",
+    "genre": "Dark Fantasy",
+    "installed": true,
+    "playtimeHours": 186,
+    "rating": 4.9
   },
   {
     "id": "steam-elden-ring",
@@ -13,7 +17,11 @@
     "platform": "steam",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900.jpg",
     "lastPlayed": "2026-09-10T18:02:00.000Z",
-    "steamAppId": "1245620"
+    "steamAppId": "1245620",
+    "genre": "Dark Fantasy",
+    "installed": true,
+    "playtimeHours": 142,
+    "rating": 4.8
   },
   {
     "id": "steam-cyberpunk",
@@ -21,7 +29,11 @@
     "platform": "steam",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/library_600x900.jpg",
     "lastPlayed": "2026-08-28T23:41:00.000Z",
-    "steamAppId": "1091500"
+    "steamAppId": "1091500",
+    "genre": "Cyberpunk",
+    "installed": true,
+    "playtimeHours": 97,
+    "rating": 4.6
   },
   {
     "id": "steam-cs2",
@@ -29,7 +41,11 @@
     "platform": "steam",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/library_600x900.jpg",
     "lastPlayed": "2026-09-13T16:05:00.000Z",
-    "steamAppId": "730"
+    "steamAppId": "730",
+    "genre": "Shooter",
+    "installed": true,
+    "playtimeHours": 410,
+    "rating": 4.5
   },
   {
     "id": "steam-hades",
@@ -37,7 +53,11 @@
     "platform": "steam",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/library_600x900.jpg",
     "lastPlayed": null,
-    "steamAppId": "1145360"
+    "steamAppId": "1145360",
+    "genre": "Action",
+    "installed": false,
+    "playtimeHours": 12,
+    "rating": 4.9
   },
   {
     "id": "steam-rdr2",
@@ -45,7 +65,11 @@
     "platform": "steam",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/library_600x900.jpg",
     "lastPlayed": "2026-07-19T20:11:00.000Z",
-    "steamAppId": "1174180"
+    "steamAppId": "1174180",
+    "genre": "Action",
+    "installed": false,
+    "playtimeHours": 64,
+    "rating": 4.8
   },
   {
     "id": "epic-fortnite",
@@ -53,7 +77,11 @@
     "platform": "epic",
     "coverUrl": "https://cdn2.unrealengine.com/social-image-chapter5-s1-3840x2160-0c81e627e022.jpg",
     "lastPlayed": "2026-09-11T19:30:00.000Z",
-    "epicAppName": "Fortnite"
+    "epicAppName": "Fortnite",
+    "genre": "Shooter",
+    "installed": true,
+    "playtimeHours": 220,
+    "rating": 4.3
   },
   {
     "id": "epic-rocket-league",
@@ -61,7 +89,11 @@
     "platform": "epic",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/252950/library_600x900.jpg",
     "lastPlayed": "2026-09-01T14:22:00.000Z",
-    "epicAppName": "Sugar"
+    "epicAppName": "Sugar",
+    "genre": "Sports",
+    "installed": true,
+    "playtimeHours": 88,
+    "rating": 4.4
   },
   {
     "id": "epic-alan-wake-2",
@@ -69,7 +101,11 @@
     "platform": "epic",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/239350/library_600x900.jpg",
     "lastPlayed": null,
-    "epicAppName": "AlanWake2"
+    "epicAppName": "AlanWake2",
+    "genre": "Horror",
+    "installed": false,
+    "playtimeHours": 0,
+    "rating": 4.7
   },
   {
     "id": "epic-fall-guys",
@@ -77,7 +113,11 @@
     "platform": "epic",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1097150/library_600x900.jpg",
     "lastPlayed": "2026-06-02T11:08:00.000Z",
-    "epicAppName": "FallGuys"
+    "epicAppName": "FallGuys",
+    "genre": "Sports",
+    "installed": false,
+    "playtimeHours": 19,
+    "rating": 4.1
   },
   {
     "id": "epic-control",
@@ -85,48 +125,70 @@
     "platform": "epic",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/870780/library_600x900.jpg",
     "lastPlayed": "2026-05-14T22:00:00.000Z",
-    "epicAppName": "Control"
+    "epicAppName": "Control",
+    "genre": "Sci-Fi",
+    "installed": false,
+    "playtimeHours": 31,
+    "rating": 4.6
   },
   {
     "id": "ps5-gow-ragnarok",
     "title": "God of War Ragnarök",
     "platform": "ps5",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2322010/library_600x900.jpg",
-    "lastPlayed": "2026-09-08T21:47:00.000Z"
+    "lastPlayed": "2026-09-08T21:47:00.000Z",
+    "genre": "Dark Fantasy",
+    "installed": true,
+    "playtimeHours": 54,
+    "rating": 4.9,
+    "trophies": "38 / 51"
   },
   {
     "id": "ps5-spider-man-2",
     "title": "Marvel's Spider-Man 2",
     "platform": "ps5",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1817070/library_600x900.jpg",
-    "lastPlayed": "2026-08-30T17:19:00.000Z"
+    "lastPlayed": "2026-08-30T17:19:00.000Z",
+    "genre": "Action",
+    "installed": true,
+    "playtimeHours": 28,
+    "rating": 4.8,
+    "trophies": "22 / 42"
   },
   {
     "id": "ps5-horizon",
     "title": "Horizon Forbidden West",
     "platform": "ps5",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2420110/library_600x900.jpg",
-    "lastPlayed": null
+    "lastPlayed": null,
+    "genre": "Sci-Fi",
+    "installed": false,
+    "playtimeHours": 0,
+    "rating": 4.7,
+    "trophies": "0 / 59"
   },
   {
     "id": "ps5-tlou",
     "title": "The Last of Us Part I",
     "platform": "ps5",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1888930/library_600x900.jpg",
-    "lastPlayed": "2026-04-21T19:03:00.000Z"
+    "lastPlayed": "2026-04-21T19:03:00.000Z",
+    "genre": "Horror",
+    "installed": false,
+    "playtimeHours": 21,
+    "rating": 4.8,
+    "trophies": "14 / 30"
   },
   {
     "id": "ps5-ghost",
     "title": "Ghost of Tsushima",
     "platform": "ps5",
     "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215430/library_600x900.jpg",
-    "lastPlayed": "2026-09-03T20:55:00.000Z"
-  },
-  {
-    "id": "steam-no-id",
-    "title": "Steam (Library Fallback)",
-    "platform": "steam",
-    "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/library_600x900.jpg",
-    "lastPlayed": null
+    "lastPlayed": "2026-09-03T20:55:00.000Z",
+    "genre": "Action",
+    "installed": true,
+    "playtimeHours": 47,
+    "rating": 4.8,
+    "trophies": "41 / 52"
   }
 ]

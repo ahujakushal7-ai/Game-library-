@@ -1,5 +1,6 @@
 mod accounts;
 mod epic;
+mod google;
 mod launch;
 mod models;
 mod psn;
@@ -17,6 +18,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             launch::launch_game,
             accounts::get_snapshot,
+            accounts::google_login,
+            accounts::save_google_client_id,
+            accounts::sign_out,
             accounts::steam_login,
             accounts::steam_save_api_key,
             accounts::steam_open_api_key_page,
@@ -25,6 +29,8 @@ pub fn run() {
             accounts::psn_begin_login,
             accounts::psn_open_npsso_page,
             accounts::psn_complete_login,
+            accounts::confirm_library_import,
+            accounts::dismiss_library_prompt,
             accounts::disconnect_account,
             accounts::refresh_connected,
         ])

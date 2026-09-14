@@ -22,7 +22,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
   const [npsso, setNpsso] = useState("");
 
   return (
-    <section className="mb-8 grid gap-4 lg:grid-cols-3">
+    <section className="mb-2 grid gap-4 lg:grid-cols-3">
       <AccountCard
         title="Steam"
         description="Sign in with Steam OpenID, then add your own Web API key to import the full owned library."
@@ -168,7 +168,7 @@ function AccountCard({
   extra?: ReactNode;
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+    <article className="rounded-2xl border border-white/10 bg-[#161325] p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-white">{title}</h2>

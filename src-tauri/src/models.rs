@@ -44,11 +44,32 @@ pub struct PsnConnection {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
+pub struct AuthUser {
+    pub provider: String,
+    pub display_name: String,
+    #[serde(default)]
+    pub email: Option<String>,
+    #[serde(default)]
+    pub avatar_url: Option<String>,
+    #[serde(default)]
+    pub initials: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct AppStore {
     pub steam: Option<SteamConnection>,
     pub epic: Option<EpicConnection>,
     pub psn: Option<PsnConnection>,
     pub games: Vec<Game>,
+    #[serde(default)]
+    pub user: Option<AuthUser>,
+    #[serde(default)]
+    pub imported_libraries: Vec<String>,
+    #[serde(default)]
+    pub skipped_libraries: Vec<String>,
+    #[serde(default)]
+    pub google_client_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -67,9 +88,38 @@ pub struct Snapshot {
     pub epic: AccountStatus,
     pub psn: AccountStatus,
     pub games: Vec<Game>,
+    pub user: Option<AuthUser>,
+    pub pending_library_prompt: Option<String>,
 }
 
 impl AppStore {
+    pub fn pending_library_prompt(&self) -> Option<String> {
+        if self.user.is_none() {
+            return None;
+        }
+        if self.epic.is_some()
+            && !contains(&self.imported_libraries, "epic")
+            && !contains(&self.skipped_libraries, "epic")
+        {
+            return Some("epic".into());
+        }
+        if self.psn.is_some()
+            && !contains(&self.imported_libraries, "psn")
+            && !contains(&self.skipped_libraries, "psn")
+        {
+            return Some("psn".into());
+        }
+        if self.user.as_ref().is_some_and(|u| u.provider == "google")
+            && !contains(&self.imported_libraries, "epic")
+            && !contains(&self.imported_libraries, "psn")
+            && !contains(&self.imported_libraries, "steam")
+            && !contains(&self.skipped_libraries, "google")
+        {
+            return Some("google".into());
+        }
+        None
+    }
+
     pub fn snapshot(&self) -> Snapshot {
         let steam_count = count_platform(&self.games, "steam");
         let epic_count = count_platform(&self.games, "epic");
@@ -119,6 +169,8 @@ impl AppStore {
                 needs_action: None,
             },
             games: self.games.clone(),
+            user: self.user.clone(),
+            pending_library_prompt: self.pending_library_prompt(),
         }
     }
 
@@ -128,6 +180,23 @@ impl AppStore {
         self.games
             .sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
     }
+
+    pub fn mark_imported(&mut self, key: &str) {
+        if !contains(&self.imported_libraries, key) {
+            self.imported_libraries.push(key.to_string());
+        }
+        self.skipped_libraries.retain(|item| item != key);
+    }
+
+    pub fn mark_skipped(&mut self, key: &str) {
+        if !contains(&self.skipped_libraries, key) {
+            self.skipped_libraries.push(key.to_string());
+        }
+    }
+}
+
+fn contains(items: &[String], key: &str) -> bool {
+    items.iter().any(|item| item == key)
 }
 
 fn count_platform(games: &[Game], platform: &str) -> u32 {

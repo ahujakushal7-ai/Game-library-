@@ -1,13 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap");
 @import "tailwindcss";
 
 html,
 body,
 #root {
   min-height: 100%;
-  background: #0d1117;
+  background: #0a0912;
 }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Inter, system-ui, sans-serif;
+  color: #f4f1ff;
+  font-family: Outfit, "Segoe UI", sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2540;
+  border-radius: 999px;
 }
