@@ -29,7 +29,7 @@ export interface AccountStatus {
 }
 
 export interface AuthUser {
-  provider: "google" | "epic" | "psn" | "steam";
+  provider: "google" | "epic" | "psn" | "steam" | "email";
   displayName: string;
   email?: string | null;
   avatarUrl?: string | null;
