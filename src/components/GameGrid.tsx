@@ -11,14 +11,24 @@ interface GameGridProps {
 export function GameGrid({ games, launchingId, onPlay, onFavorite }: GameGridProps) {
   if (games.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-16 text-center text-[#b7b3c9]">
-        No games match that search or filter.
+      <div className="flex flex-1 flex-col items-center justify-center text-ink-3">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mb-4 opacity-40">
+          <rect x="4" y="4" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2" />
+          <rect x="26" y="4" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2" />
+          <rect x="4" y="26" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2" />
+          <rect x="26" y="26" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2" />
+        </svg>
+        <p className="text-[15px] font-semibold text-[#5A647A]">No games found</p>
+        <p className="mt-1 text-xs text-[#3A4050]">Try adjusting your filters</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <div
+      className="grid gap-4"
+      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))" }}
+    >
       {games.map((game) => (
         <GameCard
           key={game.id}

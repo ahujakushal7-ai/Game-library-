@@ -131,7 +131,7 @@ export default function App() {
   }
 
   if (!ready) {
-    return <div className="min-h-screen bg-[#0a0912]" />;
+    return <div className="min-h-screen bg-canvas" />;
   }
 
   if (!user) {
@@ -185,8 +185,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0a0912] text-[#f4f1ff]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(124,92,255,0.16),_transparent_34%),radial-gradient(circle_at_80%_0%,_rgba(79,125,255,0.12),_transparent_28%)]" />
+    <div className="flex h-screen overflow-hidden bg-canvas text-ink">
       <Sidebar
         nav={nav}
         genre={genre}
@@ -204,9 +203,10 @@ export default function App() {
         }
       />
 
-      <div className="relative flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar
           games={library}
+          gameCount={visibleGames.length}
           query={query}
           platform={platform}
           sort={sort}
@@ -217,15 +217,15 @@ export default function App() {
           onViewChange={setView}
         />
 
-        <main className="flex-1 overflow-auto px-6 py-5">
+        <main className="scroll-show flex-1 overflow-auto px-6 py-6">
           {showAccounts ? (
             <div className="mb-6">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="font-[Syne] text-lg font-bold">Accounts</h2>
+                <h2 className="text-lg font-bold text-ink">Accounts</h2>
                 <button
                   type="button"
                   onClick={() => setShowAccounts(false)}
-                  className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.14em] text-[#b7b3c9]"
+                  className="rounded-full border border-line px-3 py-1 text-xs uppercase tracking-[0.14em] text-ink-2"
                 >
                   Close
                 </button>
@@ -301,18 +301,6 @@ export default function App() {
               />
             </div>
           ) : null}
-
-          <div className="mb-4 flex items-end justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8b88a0]">
-                {nav === "all" ? "All games" : nav}
-              </p>
-              <h1 className="font-[Syne] text-2xl font-extrabold">Your shelf</h1>
-            </div>
-            <p className="text-xs uppercase tracking-[0.16em] text-[#8b88a0]">
-              {visibleGames.length} {visibleGames.length === 1 ? "title" : "titles"}
-            </p>
-          </div>
 
           {view === "grid" ? (
             <GameGrid

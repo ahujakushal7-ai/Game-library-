@@ -1,18 +1,25 @@
 import type { Platform } from "../types/game";
-import { PLATFORM_LABEL } from "../lib/catalog";
+import { PlatformIcon } from "./PlatformIcon";
 
 const STYLES: Record<Platform, string> = {
-  steam: "bg-[#1b2838]/90 text-[#9ecbff] border-[#66c0f4]/30",
-  epic: "bg-black/70 text-zinc-100 border-white/20",
-  ps5: "bg-[#0070D1]/85 text-white border-[#4ea2ff]/40",
+  steam: "bg-steam",
+  epic: "bg-epic",
+  ps5: "bg-ps5",
+};
+
+const LABELS: Record<Platform, string> = {
+  steam: "STEAM",
+  epic: "EPIC",
+  ps5: "PS5",
 };
 
 export function PlatformBadge({ platform }: { platform: Platform }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] backdrop-blur-md ${STYLES[platform]}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border border-white/8 px-2 py-1 backdrop-blur-md ${STYLES[platform]}`}
     >
-      {platform === "ps5" ? "PS5" : PLATFORM_LABEL[platform]}
+      <PlatformIcon platform={platform} size={11} />
+      <span className="text-[9px] font-bold tracking-[0.08em] text-white/90">{LABELS[platform]}</span>
     </span>
   );
 }
