@@ -31,12 +31,12 @@ export function LibraryConnectPrompt({
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#161325] p-6 shadow-2xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b88a0]">
+      <div className="w-full max-w-md rounded-3xl border border-line bg-surface p-6 shadow-2xl">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-3">
           First-time connection
         </p>
-        <h2 className="mt-2 font-[Syne] text-2xl font-extrabold">{title}</h2>
-        <p className="mt-3 text-sm text-[#b7b3c9]">{body}</p>
+        <h2 className="mt-2 text-2xl font-bold">{title}</h2>
+        <p className="mt-3 text-sm text-ink-2">{body}</p>
 
         {isGoogle ? (
           <div className="mt-6 flex flex-col gap-2">
@@ -66,7 +66,7 @@ export function LibraryConnectPrompt({
               type="button"
               disabled={busy}
               onClick={() => onConnect(provider)}
-              className="flex-1 rounded-xl bg-[#7c5cff] px-4 py-3 text-sm font-semibold disabled:opacity-60"
+              className="flex-1 rounded-xl bg-accent px-4 py-3 text-sm font-semibold disabled:opacity-60"
             >
               {busy ? "Importing..." : "Connect library"}
             </button>

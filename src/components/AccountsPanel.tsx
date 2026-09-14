@@ -43,7 +43,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
                 value={steamKey}
                 onChange={(event) => setSteamKey(event.target.value)}
                 placeholder="Steam Web API key"
-                className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none"
+                className="rounded-xl border border-line bg-canvas px-3 py-2 text-sm outline-none"
               />
               <div className="flex gap-2">
                 <button
@@ -55,7 +55,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
                 <button
                   type="button"
                   onClick={props.onOpenSteamApiKey}
-                  className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-300"
+                  className="rounded-xl border border-line px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-300"
                 >
                   Get API key
                 </button>
@@ -84,7 +84,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
               value={epicCode}
               onChange={(event) => setEpicCode(event.target.value)}
               placeholder="authorizationCode"
-              className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none"
+              className="rounded-xl border border-line bg-canvas px-3 py-2 text-sm outline-none"
             />
             <button
               type="submit"
@@ -115,7 +115,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
               value={npsso}
               onChange={(event) => setNpsso(event.target.value)}
               placeholder="NPSSO token"
-              className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none"
+              className="rounded-xl border border-line bg-canvas px-3 py-2 text-sm outline-none"
             />
             <div className="flex gap-2">
               <button
@@ -127,7 +127,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
               <button
                 type="button"
                 onClick={props.onPsnNpssoPage}
-                className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-300"
+                className="rounded-xl border border-line px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-300"
               >
                 Open NPSSO
               </button>
@@ -141,7 +141,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
           type="button"
           onClick={props.onRefresh}
           disabled={props.busy !== null}
-          className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-300"
+          className="rounded-full border border-line px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-300"
         >
           Refresh connected libraries
         </button>
@@ -168,7 +168,7 @@ function AccountCard({
   extra?: ReactNode;
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#161325] p-5">
+    <article className="rounded-2xl border border-line bg-surface p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-white">{title}</h2>
@@ -205,7 +205,7 @@ function AccountCard({
           <button
             type="button"
             onClick={onDisconnect}
-            className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-400"
+            className="rounded-xl border border-line px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-400"
           >
             Disconnect
           </button>
