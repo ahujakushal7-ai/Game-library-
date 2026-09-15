@@ -82,16 +82,30 @@ export const epicBeginLogin = () => {
   }
   return call<void>("epic_begin_login");
 };
+export async function epicLogin(): Promise<Snapshot> {
+  if (!isTauri()) {
+    const snapshot = readPreview();
+    const sample = catalog as Game[];
+    const games = sample.filter((game) => game.platform === "epic");
+    snapshot.user = snapshot.user ?? previewUser("epic", "Epic Player");
+    snapshot.games = [...snapshot.games.filter((game) => game.platform !== "epic"), ...games];
+    snapshot.epic = {
+      connected: true,
+      label: snapshot.epic.label || "Epic Player",
+      gameCount: games.length,
+      needsAction: null,
+    };
+    snapshot.pendingLibraryPrompt = null;
+    return writePreview(snapshot);
+  }
+  return call<Snapshot>("epic_login");
+}
 export async function epicCompleteLogin(authorizationCode: string): Promise<Snapshot> {
   if (!isTauri()) {
-    if (authorizationCode.trim().length < 4) {
-      throw new Error("Paste the Epic authorizationCode after signing in.");
-    }
-    const snapshot = readPreview();
-    snapshot.user = snapshot.user ?? previewUser("epic", "Epic Player");
-    snapshot.epic = { connected: true, label: "Epic Player", gameCount: 0, needsAction: null };
-    snapshot.pendingLibraryPrompt = "epic";
-    return writePreview(snapshot);
+    return epicLogin();
+  }
+  if (authorizationCode.trim().length < 4) {
+    throw new Error("Paste the Epic authorizationCode after signing in.");
   }
   return call<Snapshot>("epic_complete_login", { authorizationCode });
 }

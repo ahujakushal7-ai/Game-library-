@@ -67,7 +67,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
 
       <AccountCard
         title="Epic Games"
-        description="Sign in on Epic’s site. After login, copy authorizationCode from the JSON page and paste it here."
+        description="Sign in once. VAULT keeps the Epic session and imports official game names from your library."
         status={props.snapshot.epic}
         busy={props.busy === "epic"}
         onConnect={props.onEpicLogin}
@@ -83,7 +83,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
             <input
               value={epicCode}
               onChange={(event) => setEpicCode(event.target.value)}
-              placeholder="authorizationCode"
+              placeholder="Backup: paste authorizationCode"
               className="rounded-xl border border-line bg-canvas px-3 py-2 text-sm outline-none"
             />
             <button

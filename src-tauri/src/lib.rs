@@ -25,6 +25,7 @@ pub fn run() {
             accounts::steam_save_api_key,
             accounts::steam_open_api_key_page,
             accounts::epic_begin_login,
+            accounts::epic_login,
             accounts::epic_complete_login,
             accounts::psn_begin_login,
             accounts::psn_open_npsso_page,

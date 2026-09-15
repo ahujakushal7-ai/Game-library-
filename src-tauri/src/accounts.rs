@@ -131,12 +131,20 @@ pub fn epic_begin_login(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub async fn epic_login(app: AppHandle) -> Result<Snapshot, String> {
+    let code = epic::capture_authorization_code(&app).await?;
+    finish_epic_login(app, code).await
+}
+
+#[tauri::command]
 pub async fn epic_complete_login(app: AppHandle, authorization_code: String) -> Result<Snapshot, String> {
     let code = extract_epic_code(&authorization_code)?;
+    finish_epic_login(app, code).await
+}
+
+async fn finish_epic_login(app: AppHandle, code: String) -> Result<Snapshot, String> {
     let connection = epic::exchange_auth_code(&code).await?;
     let mut store = storage::load(&app)?;
-    let first_time = !store.imported_libraries.iter().any(|item| item == "epic")
-        && !store.skipped_libraries.iter().any(|item| item == "epic");
     if store.user.is_none() {
         store.user = Some(AuthUser {
             provider: "epic".into(),
@@ -146,12 +154,10 @@ pub async fn epic_complete_login(app: AppHandle, authorization_code: String) -> 
             initials: google::initials_for(&connection.display_name),
         });
     }
-    store.epic = Some(connection.clone());
-    if !first_time {
-        let games = epic::import_library(&connection.access_token).await?;
-        store.replace_platform_games("epic", games);
-        store.mark_imported("epic");
-    }
+    let games = epic::import_library(&connection.access_token).await?;
+    store.replace_platform_games("epic", games);
+    store.mark_imported("epic");
+    store.epic = Some(connection);
     storage::save(&app, &store)?;
     Ok(store.snapshot())
 }
@@ -198,12 +204,13 @@ pub async fn confirm_library_import(app: AppHandle, provider: String) -> Result<
     let mut store = storage::load(&app)?;
     match provider.as_str() {
         "epic" => {
-            let token = store
+            let connection = store
                 .epic
-                .as_ref()
-                .map(|e| e.access_token.clone())
+                .clone()
                 .ok_or_else(|| "Sign in with Epic before importing that library.".to_string())?;
-            let games = epic::import_library(&token).await?;
+            let fresh = epic::ensure_session(&connection).await?;
+            let games = epic::import_library(&fresh.access_token).await?;
+            store.epic = Some(fresh);
             store.replace_platform_games("epic", games);
             store.mark_imported("epic");
         }
@@ -285,14 +292,18 @@ pub async fn refresh_connected(app: AppHandle) -> Result<Snapshot, String> {
         store.mark_imported("steam");
     }
 
-    if let Some(mut epic_conn) = store.epic.clone() {
-        if let Ok(refreshed) = epic::refresh_session(&epic_conn.refresh_token).await {
-            epic_conn = refreshed.clone();
-            store.epic = Some(refreshed);
-        }
-        if let Ok(games) = epic::import_library(&epic_conn.access_token).await {
-            store.replace_platform_games("epic", games);
-            store.mark_imported("epic");
+    if let Some(epic_conn) = store.epic.clone() {
+        match epic::ensure_session(&epic_conn).await {
+            Ok(fresh) => {
+                if let Ok(games) = epic::import_library(&fresh.access_token).await {
+                    store.replace_platform_games("epic", games);
+                    store.mark_imported("epic");
+                }
+                store.epic = Some(fresh);
+            }
+            Err(error) => {
+                log::warn!("Epic session refresh failed: {error}");
+            }
         }
     }
 
