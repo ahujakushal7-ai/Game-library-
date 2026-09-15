@@ -6,7 +6,13 @@ use tauri::AppHandle;
 use tauri_plugin_opener::OpenerExt;
 use url::Url;
 
-pub async fn login_with_openid(app: &AppHandle) -> Result<(String, String), String> {
+#[derive(Default)]
+pub struct SteamProfile {
+    pub persona_name: String,
+    pub avatar_url: Option<String>,
+}
+
+pub async fn login_with_openid(app: &AppHandle) -> Result<(String, SteamProfile), String> {
     let listener = std::net::TcpListener::bind("127.0.0.1:0")
         .map_err(|e| format!("Could not start Steam login callback: {e}"))?;
     let port = listener
@@ -41,8 +47,8 @@ pub async fn login_with_openid(app: &AppHandle) -> Result<(String, String), Stri
         .map_err(|e| format!("Steam login task failed: {e}"))??;
 
     let steam_id = verify_openid(&callback).await?;
-    let persona = fetch_persona_name(&steam_id).await.unwrap_or_default();
-    Ok((steam_id, persona))
+    let profile = fetch_profile(&steam_id).await.unwrap_or_default();
+    Ok((steam_id, profile))
 }
 
 fn wait_for_callback(

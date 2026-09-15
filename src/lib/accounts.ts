@@ -34,7 +34,7 @@ function previewUser(provider: AuthUser["provider"], displayName: string, email?
 
 async function call<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   if (!isTauri()) {
-    throw new Error("Sign-in and library import run inside the Windows Game Library app.");
+      throw new Error("Sign-in and library import run inside the Game Library desktop app.");
   }
   return invoke<T>(command, args);
 }
@@ -72,7 +72,24 @@ export async function signOut(): Promise<Snapshot> {
   return call<Snapshot>("sign_out");
 }
 
-export const steamLogin = () => call<Snapshot>("steam_login");
+export async function steamLogin(): Promise<Snapshot> {
+  if (!isTauri()) {
+    const sample = catalog as Game[];
+    const games = sample.filter((game) => game.platform === "steam");
+    const snapshot = readPreview();
+    snapshot.user = snapshot.user ?? previewUser("steam", "Steam Player");
+    snapshot.steam = {
+      connected: true,
+      label: "Steam Player",
+      gameCount: games.length,
+      needsAction: "Add a Steam Web API key in Manage accounts to import the full owned library.",
+    };
+    snapshot.games = [...snapshot.games.filter((game) => game.platform !== "steam"), ...games];
+    snapshot.pendingLibraryPrompt = "steam";
+    return writePreview(snapshot);
+  }
+  return call<Snapshot>("steam_login");
+}
 export const steamSaveApiKey = (apiKey: string) =>
   call<Snapshot>("steam_save_api_key", { apiKey });
 export const steamOpenApiKeyPage = () => call<void>("steam_open_api_key_page");
@@ -132,6 +149,16 @@ export async function confirmLibraryImport(provider: string): Promise<Snapshot> 
       snapshot.epic = {
         connected: true,
         label: snapshot.epic.label || "Epic Player",
+        gameCount: games.length,
+        needsAction: null,
+      };
+    }
+    if (provider === "steam") {
+      const games = sample.filter((game) => game.platform === "steam");
+      snapshot.games = [...snapshot.games.filter((game) => game.platform !== "steam"), ...games];
+      snapshot.steam = {
+        connected: true,
+        label: snapshot.steam.label || "Steam Player",
         gameCount: games.length,
         needsAction: null,
       };

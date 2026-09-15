@@ -109,6 +109,12 @@ impl AppStore {
         {
             return Some("psn".into());
         }
+        if self.steam.is_some()
+            && !contains(&self.imported_libraries, "steam")
+            && !contains(&self.skipped_libraries, "steam")
+        {
+            return Some("steam".into());
+        }
         if self.user.as_ref().is_some_and(|u| u.provider == "google")
             && !contains(&self.imported_libraries, "epic")
             && !contains(&self.imported_libraries, "psn")

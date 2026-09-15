@@ -7,7 +7,7 @@ interface LoginPageProps {
   onEmailLogin: (email: string, password: string) => void;
   onOpenSignup: () => void;
   onGoogle: (clientId: string) => void;
-  onSteam?: () => void;
+  onSteam: () => void;
   onEpicStart: () => void;
   onEpicComplete: (code: string) => void;
   onPsnStart: () => void;

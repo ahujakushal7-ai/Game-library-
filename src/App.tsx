@@ -147,6 +147,13 @@ export default function App() {
           notify(`Signed in as ${next.user?.displayName ?? "Google"}`);
           return next;
         }),
+      onSteam: () =>
+        run("steam", async () => {
+          notify("Complete Steam sign-in in your browser...");
+          const next = await steamLogin();
+          notify(`Signed in with Steam as ${next.user?.displayName ?? next.steam.label ?? "Steam"}`);
+          return next;
+        }),
       onEpicStart: () =>
         run("epic", async () => {
           await epicBeginLogin();

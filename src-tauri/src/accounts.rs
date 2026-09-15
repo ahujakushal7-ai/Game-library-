@@ -56,34 +56,38 @@ pub fn sign_out(app: AppHandle) -> Result<Snapshot, String> {
 
 #[tauri::command]
 pub async fn steam_login(app: AppHandle) -> Result<Snapshot, String> {
-    let (steam_id, persona_name) = steam::login_with_openid(&app).await?;
+    let (steam_id, profile) = steam::login_with_openid(&app).await?;
     let mut store = storage::load(&app)?;
-    let first_time = !store.imported_libraries.iter().any(|item| item == "steam")
-        && !store.skipped_libraries.iter().any(|item| item == "steam");
+    let persona_name = if profile.persona_name.trim().is_empty() {
+        "Steam Player".to_string()
+    } else {
+        profile.persona_name.trim().to_string()
+    };
     let api_key = store.steam.as_ref().and_then(|s| s.api_key.clone());
     store.steam = Some(SteamConnection {
         steam_id: steam_id.clone(),
         persona_name: persona_name.clone(),
         api_key: api_key.clone(),
     });
-    if store.user.is_none() {
+    if store.user.is_none() || store.user.as_ref().is_some_and(|u| u.provider == "steam") {
         store.user = Some(AuthUser {
             provider: "steam".into(),
             display_name: persona_name.clone(),
             email: None,
-            avatar_url: None,
+            avatar_url: profile.avatar_url.clone(),
             initials: google::initials_for(&persona_name),
         });
     }
-    if !first_time {
-        let mut games = steam::import_local_installs();
-        if let Some(key) = api_key.as_deref().filter(|k| !k.is_empty()) {
-            if let Ok(owned) = steam::import_owned_games(&steam_id, key).await {
-                games = owned;
-            }
+
+    let mut games = steam::import_local_installs();
+    if let Some(key) = api_key.as_deref().filter(|k| !k.is_empty()) {
+        if let Ok(owned) = steam::import_owned_games(&steam_id, key).await {
+            games = owned;
         }
         store.replace_platform_games("steam", games);
         store.mark_imported("steam");
+    } else {
+        store.replace_platform_games("steam", games);
     }
     storage::save(&app, &store)?;
     Ok(store.snapshot())

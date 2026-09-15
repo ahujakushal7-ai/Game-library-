@@ -21,13 +21,17 @@ export function LibraryConnectPrompt({
       ? "Connect your Epic library?"
       : provider === "psn"
         ? "Connect your PlayStation library?"
-        : "Connect a game library?";
+        : provider === "steam"
+          ? "Connect your Steam library?"
+          : "Connect a game library?";
   const body =
     provider === "epic"
       ? "This is your first Epic sign-in. Import owned Epic games into VAULT now?"
       : provider === "psn"
         ? "This is your first PlayStation sign-in. Import your PSN titles into VAULT now?"
-        : "Google signed you in. Connect Epic or PlayStation to import your real game shelf.";
+        : provider === "steam"
+          ? "Steam signed you in. Import locally installed Steam games now? Add a Steam Web API key later in Manage accounts for your full owned library."
+          : "Google signed you in. Connect Epic or PlayStation to import your real game shelf.";
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
