@@ -31,6 +31,10 @@ pub struct EpicConnection {
     pub account_id: String,
     pub access_token: String,
     pub refresh_token: String,
+    #[serde(default)]
+    pub device_id: Option<String>,
+    #[serde(default)]
+    pub device_secret: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

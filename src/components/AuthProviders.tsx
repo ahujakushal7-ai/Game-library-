@@ -56,7 +56,7 @@ export function AuthProviders({
           }}
           className="w-full rounded-xl bg-epic px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
         >
-          Continue with Epic Games
+          {busy === "epic" ? "Waiting for Epic..." : "Continue with Epic Games"}
         </button>
         <button
           type="button"
@@ -96,7 +96,9 @@ export function AuthProviders({
           }}
         >
           <p className="text-xs text-ink-2">
-            After Epic sign-in, copy <code>authorizationCode</code> from the JSON page and paste it here.
+            {busy === "epic"
+              ? "Finish signing in with Epic in the window that opened. Game names import automatically."
+              : "Sign in with Epic in the app window. Paste a code only if that window does not appear."}
           </p>
           <input
             value={epicCode}

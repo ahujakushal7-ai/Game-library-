@@ -13,8 +13,8 @@ import {
   confirmLibraryImport,
   disconnectAccount,
   dismissLibraryPrompt,
-  epicBeginLogin,
   epicCompleteLogin,
+  epicLogin,
   getSnapshot,
   googleLogin,
   psnBeginLogin,
@@ -88,9 +88,15 @@ export default function App() {
 
   useEffect(() => {
     getSnapshot()
-      .then((next) => {
+      .then(async (next) => {
         setSnapshot(next);
         setReady(true);
+        try {
+          const refreshed = await refreshConnected();
+          setSnapshot(refreshed);
+        } catch {
+          // Browser preview has no desktop session to refresh.
+        }
       })
       .catch(() => setReady(true));
   }, []);
@@ -156,8 +162,12 @@ export default function App() {
         }),
       onEpicStart: () =>
         run("epic", async () => {
-          await epicBeginLogin();
-          notify("Sign in with Epic, then paste authorizationCode.");
+          notify("Sign in with Epic in the window that opened...");
+          const next = await epicLogin();
+          notify(
+            `Signed in with Epic as ${next.user?.displayName ?? next.epic.label ?? "Epic"}. Imported ${next.epic.gameCount} games.`,
+          );
+          return next;
         }),
       onEpicComplete: (code: string) =>
         run("epic", async () => {
@@ -290,8 +300,12 @@ export default function App() {
                 }
                 onEpicLogin={() =>
                   run("epic", async () => {
-                    await epicBeginLogin();
-                    notify("Sign in with Epic, then paste authorizationCode below.");
+                    notify("Sign in with Epic in the window that opened...");
+                    const next = await epicLogin();
+                    notify(
+                      `Epic connected as ${next.epic.label || "Epic"}. Imported ${next.epic.gameCount} games.`,
+                    );
+                    return next;
                   })
                 }
                 onEpicCode={(code) =>
@@ -371,11 +385,14 @@ export default function App() {
           }
           onChooseEpic={() =>
             run("import", async () => {
-              const next = await dismissLibraryPrompt("google");
+              await dismissLibraryPrompt("google");
               setShowAccounts(true);
-              await epicBeginLogin();
-              notify("Sign in with Epic, then paste authorizationCode to connect that library.");
-              return next;
+              notify("Sign in with Epic in the window that opened...");
+              const connected = await epicLogin();
+              notify(
+                `Epic connected as ${connected.epic.label || "Epic"}. Imported ${connected.epic.gameCount} games.`,
+              );
+              return connected;
             })
           }
           onChoosePsn={() =>
