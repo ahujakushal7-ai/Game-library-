@@ -22,15 +22,29 @@ const LOGIN_WINDOW: &str = "epic-login";
 const INJECT_REDIRECT: &str = r#"
 (() => {
   try {
-    const text = (document.body && document.body.innerText) ? document.body.innerText.trim() : "";
-    if (!text.startsWith("{")) return "";
-    const data = JSON.parse(text);
-    return data.authorizationCode || data.code || "";
-  } catch (e) {
-    return "";
-  }
+    const chunks = [];
+    if (document.body) {
+      chunks.push(document.body.innerText || "");
+      chunks.push(document.body.textContent || "");
+    }
+    document.querySelectorAll("pre, code").forEach((el) => chunks.push(el.innerText || ""));
+    for (const chunk of chunks) {
+      const text = String(chunk || "").trim();
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start < 0 || end <= start) continue;
+      const data = JSON.parse(text.slice(start, end + 1));
+      const code = data.authorizationCode || data.code || "";
+      if (code && String(code).length > 8) return String(code);
+    }
+  } catch (e) {}
+  return "";
 })()
 "#;
+const DEVICE_AUTH_HOSTS: [&str; 2] = [
+    "account-public-service-prod03.ol.epicgames.com",
+    "account-public-service-prod.ol.epicgames.com",
+];
 
 pub fn login_url() -> String {
     let redirect = format!(
@@ -101,6 +115,22 @@ pub async fn capture_authorization_code(app: &AppHandle) -> Result<String, Strin
         .map_err(|e| format!("Could not open Epic sign-in window: {e}"))?;
 
     if let Some(window) = app.get_webview_window(LOGIN_WINDOW) {
+        let poll_sender = sender.clone();
+        let poll_window = window.clone();
+        tauri::async_runtime::spawn(async move {
+            for _ in 0..90 {
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                if sender_taken(&poll_sender) {
+                    break;
+                }
+                let page_sender = poll_sender.clone();
+                let _ = poll_window.eval_with_callback(INJECT_REDIRECT, move |raw| {
+                    if let Some(code) = js_string_result(&raw) {
+                        take_send(&page_sender, Ok(code));
+                    }
+                });
+            }
+        });
         let _ = window.on_window_event(move |event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {
                 take_send(&close_sender, Err("Epic sign-in was cancelled.".into()));
@@ -137,6 +167,19 @@ pub async fn refresh_session(refresh_token: &str) -> Result<EpicConnection, Stri
         ("token_type", "eg1"),
     ])
     .await
+}
+
+pub fn has_saved_credentials(connection: &EpicConnection) -> bool {
+    let device = connection
+        .device_id
+        .as_deref()
+        .is_some_and(|value| !value.is_empty())
+        && connection
+            .device_secret
+            .as_deref()
+            .is_some_and(|value| !value.is_empty())
+        && !connection.account_id.is_empty();
+    device || !connection.refresh_token.is_empty()
 }
 
 pub async fn ensure_session(connection: &EpicConnection) -> Result<EpicConnection, String> {
@@ -184,38 +227,56 @@ async fn attach_device_auth(connection: &mut EpicConnection) {
     if connection.account_id.is_empty() || connection.access_token.is_empty() {
         return;
     }
-    if let Ok((device_id, secret)) =
-        create_device_auth(&connection.access_token, &connection.account_id).await
-    {
-        connection.device_id = Some(device_id);
-        connection.device_secret = Some(secret);
+    match create_device_auth(&connection.access_token, &connection.account_id).await {
+        Ok((device_id, secret)) => {
+            connection.device_id = Some(device_id);
+            connection.device_secret = Some(secret);
+        }
+        Err(error) => log::warn!("Could not save long-lived Epic device login: {error}"),
     }
 }
 
 async fn create_device_auth(access_token: &str, account_id: &str) -> Result<(String, String), String> {
-    let json: Value = http_client()
-        .post(format!(
-            "https://{EPIC_OAUTH_HOST}/account/api/public/account/{account_id}/deviceAuth"
-        ))
-        .bearer_auth(access_token)
-        .header("User-Agent", EPIC_UA)
-        .json(&serde_json::json!({}))
-        .send()
-        .await
-        .map_err(|e| format!("Epic device login failed: {e}"))?
-        .json()
-        .await
-        .map_err(|e| format!("Epic device login response was invalid: {e}"))?;
-
-    let device_id = json
-        .get("deviceId")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| "Epic did not return a device id.".to_string())?;
-    let secret = json
-        .get("secret")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| "Epic did not return a device secret.".to_string())?;
-    Ok((device_id.to_string(), secret.to_string()))
+    let mut last_error = "Epic did not return a device id.".to_string();
+    for host in DEVICE_AUTH_HOSTS {
+        let response = match http_client()
+            .post(format!(
+                "https://{host}/account/api/public/account/{account_id}/deviceAuth"
+            ))
+            .bearer_auth(access_token)
+            .header("User-Agent", EPIC_UA)
+            .json(&serde_json::json!({}))
+            .send()
+            .await
+        {
+            Ok(response) => response,
+            Err(error) => {
+                last_error = format!("Epic device login failed: {error}");
+                continue;
+            }
+        };
+        let json: Value = match response.json().await {
+            Ok(json) => json,
+            Err(error) => {
+                last_error = format!("Epic device login response was invalid: {error}");
+                continue;
+            }
+        };
+        if let (Some(device_id), Some(secret)) = (
+            json.get("deviceId").and_then(|v| v.as_str()),
+            json.get("secret").and_then(|v| v.as_str()),
+        ) {
+            if !device_id.is_empty() && !secret.is_empty() {
+                return Ok((device_id.to_string(), secret.to_string()));
+            }
+        }
+        last_error = json
+            .get("errorMessage")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Epic did not return a device id.")
+            .to_string();
+    }
+    Err(last_error)
 }
 
 async fn token_request(form: &[(&str, &str)]) -> Result<EpicConnection, String> {
@@ -324,11 +385,6 @@ pub async fn import_library(access_token: &str) -> Result<Vec<Game>, String> {
         .collect();
 
     games.extend(import_local_installs());
-
-    if games.is_empty() {
-        return Err("No Epic games were found for this account.".into());
-    }
-
     Ok(dedupe(games))
 }
 
@@ -586,6 +642,10 @@ fn js_string_result(raw: &str) -> Option<String> {
     let parsed: Value = serde_json::from_str(raw).ok()?;
     let text = parsed.as_str()?.trim();
     (text.len() > 8).then(|| text.to_string())
+}
+
+fn sender_taken(sender: &Arc<Mutex<Option<oneshot::Sender<Result<String, String>>>>>) -> bool {
+    sender.lock().map(|slot| slot.is_none()).unwrap_or(true)
 }
 
 fn take_send(sender: &Arc<Mutex<Option<oneshot::Sender<Result<String, String>>>>>, value: Result<String, String>) {

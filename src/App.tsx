@@ -162,7 +162,7 @@ export default function App() {
         }),
       onEpicStart: () =>
         run("epic", async () => {
-          notify("Sign in with Epic in the window that opened...");
+          notify("Signing in with Epic. Saved sessions skip the OAuth window.");
           const next = await epicLogin();
           notify(
             `Signed in with Epic as ${next.user?.displayName ?? next.epic.label ?? "Epic"}. Imported ${next.epic.gameCount} games.`,
@@ -300,7 +300,7 @@ export default function App() {
                 }
                 onEpicLogin={() =>
                   run("epic", async () => {
-                    notify("Sign in with Epic in the window that opened...");
+                    notify("Signing in with Epic. Saved sessions skip the OAuth window.");
                     const next = await epicLogin();
                     notify(
                       `Epic connected as ${next.epic.label || "Epic"}. Imported ${next.epic.gameCount} games.`,
@@ -387,7 +387,7 @@ export default function App() {
             run("import", async () => {
               await dismissLibraryPrompt("google");
               setShowAccounts(true);
-              notify("Sign in with Epic in the window that opened...");
+              notify("Signing in with Epic. Saved sessions skip the OAuth window.");
               const connected = await epicLogin();
               notify(
                 `Epic connected as ${connected.epic.label || "Epic"}. Imported ${connected.epic.gameCount} games.`,

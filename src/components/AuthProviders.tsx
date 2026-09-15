@@ -97,8 +97,8 @@ export function AuthProviders({
         >
           <p className="text-xs text-ink-2">
             {busy === "epic"
-              ? "Finish signing in with Epic in the window that opened. Game names import automatically."
-              : "Sign in with Epic in the app window. Paste a code only if that window does not appear."}
+              ? "If this is your first Epic link, finish sign-in in the window. Later launches reuse the saved session automatically."
+              : "First time opens Epic once and stores the session. After that, Continue with Epic signs you in without a new token."}
           </p>
           <input
             value={epicCode}

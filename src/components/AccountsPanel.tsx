@@ -67,7 +67,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
 
       <AccountCard
         title="Epic Games"
-        description="Sign in once. VAULT keeps the Epic session and imports official game names from your library."
+        description="Sign in with Epic once. VAULT stores that session and reuses it on the next login so you do not paste a new OAuth token."
         status={props.snapshot.epic}
         busy={props.busy === "epic"}
         onConnect={props.onEpicLogin}

@@ -129,6 +129,15 @@ pub fn epic_begin_login(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn epic_login(app: AppHandle) -> Result<Snapshot, String> {
+    let store = storage::load(&app)?;
+    if let Some(existing) = store.epic.clone() {
+        if epic::has_saved_credentials(&existing) {
+            match apply_epic_connection(app.clone(), existing).await {
+                Ok(snapshot) => return Ok(snapshot),
+                Err(error) => log::warn!("Saved Epic session could not be reused: {error}"),
+            }
+        }
+    }
     let code = epic::capture_authorization_code(&app).await?;
     finish_epic_login(app, code).await
 }
@@ -141,6 +150,14 @@ pub async fn epic_complete_login(app: AppHandle, authorization_code: String) -> 
 
 async fn finish_epic_login(app: AppHandle, code: String) -> Result<Snapshot, String> {
     let connection = epic::exchange_auth_code(&code).await?;
+    apply_epic_connection(app, connection).await
+}
+
+async fn apply_epic_connection(
+    app: AppHandle,
+    connection: crate::models::EpicConnection,
+) -> Result<Snapshot, String> {
+    let connection = epic::ensure_session(&connection).await.unwrap_or(connection);
     let mut store = storage::load(&app)?;
     if store.user.is_none() {
         store.user = Some(AuthUser {
@@ -151,10 +168,14 @@ async fn finish_epic_login(app: AppHandle, code: String) -> Result<Snapshot, Str
             initials: google::initials_for(&connection.display_name),
         });
     }
-    let games = epic::import_library(&connection.access_token).await?;
-    store.replace_platform_games("epic", games);
-    store.mark_imported("epic");
-    store.epic = Some(connection);
+    store.epic = Some(connection.clone());
+    match epic::import_library(&connection.access_token).await {
+        Ok(games) => {
+            store.replace_platform_games("epic", games);
+            store.mark_imported("epic");
+        }
+        Err(error) => log::warn!("Epic library import failed: {error}"),
+    }
     storage::save(&app, &store)?;
     Ok(store.snapshot())
 }
