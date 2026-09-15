@@ -143,7 +143,7 @@ fn extract_steam_id(claimed_id: &str) -> Result<String, String> {
     }
 }
 
-async fn fetch_persona_name(steam_id: &str) -> Result<String, String> {
+async fn fetch_profile(steam_id: &str) -> Result<SteamProfile, String> {
     let url = format!("https://steamcommunity.com/profiles/{steam_id}/?xml=1");
     let xml = reqwest::get(url)
         .await
@@ -151,7 +151,14 @@ async fn fetch_persona_name(steam_id: &str) -> Result<String, String> {
         .text()
         .await
         .map_err(|e| e.to_string())?;
-    Ok(extract_xml_tag(&xml, "steamID").unwrap_or_default())
+    let persona_name = extract_xml_tag(&xml, "steamID").unwrap_or_default();
+    let avatar_url = extract_xml_tag(&xml, "avatarFull")
+        .or_else(|| extract_xml_tag(&xml, "avatarMedium"))
+        .filter(|url| !url.is_empty());
+    Ok(SteamProfile {
+        persona_name,
+        avatar_url,
+    })
 }
 
 fn extract_xml_tag(xml: &str, tag: &str) -> Option<String> {
