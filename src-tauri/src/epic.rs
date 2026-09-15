@@ -446,6 +446,7 @@ fn map_record(record: &Value, catalog: &HashMap<String, Value>) -> Option<Game> 
         steam_app_id: None,
         epic_app_name: Some(app_name),
         launch_uri: Some(launch_uri),
+        installed: false,
     })
 }
 
@@ -515,6 +516,7 @@ pub fn import_local_installs() -> Vec<Game> {
                 launch_uri: Some(format!(
                     "com.epicgames.launcher://apps/{app_name}?action=launch&silent=true"
                 )),
+                installed: true,
             });
         }
     }

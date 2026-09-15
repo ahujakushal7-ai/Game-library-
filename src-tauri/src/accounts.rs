@@ -79,16 +79,9 @@ pub async fn steam_login(app: AppHandle) -> Result<Snapshot, String> {
         });
     }
 
-    let mut games = steam::import_local_installs();
-    if let Some(key) = api_key.as_deref().filter(|k| !k.is_empty()) {
-        if let Ok(owned) = steam::import_owned_games(&steam_id, key).await {
-            games = owned;
-        }
-        store.replace_platform_games("steam", games);
-        store.mark_imported("steam");
-    } else {
-        store.replace_platform_games("steam", games);
-    }
+    let games = steam::import_library(&steam_id, api_key.as_deref()).await;
+    store.replace_platform_games("steam", games);
+    store.mark_imported("steam");
     storage::save(&app, &store)?;
     Ok(store.snapshot())
 }
@@ -115,7 +108,7 @@ pub async fn steam_save_api_key(app: AppHandle, api_key: String) -> Result<Snaps
         persona_name,
         api_key: Some(key.clone()),
     });
-    let games = steam::import_owned_games(&steam_id, &key).await?;
+    let games = steam::import_library(&steam_id, Some(&key)).await;
     store.replace_platform_games("steam", games);
     store.mark_imported("steam");
     storage::save(&app, &store)?;
@@ -233,12 +226,8 @@ pub async fn confirm_library_import(app: AppHandle, provider: String) -> Result<
                 .steam
                 .clone()
                 .ok_or_else(|| "Sign in with Steam before importing that library.".to_string())?;
-            let mut games = steam::import_local_installs();
-            if let Some(key) = steam_conn.api_key.as_deref().filter(|k| !k.is_empty()) {
-                if let Ok(owned) = steam::import_owned_games(&steam_conn.steam_id, key).await {
-                    games = owned;
-                }
-            }
+            let games =
+                steam::import_library(&steam_conn.steam_id, steam_conn.api_key.as_deref()).await;
             store.replace_platform_games("steam", games);
             store.mark_imported("steam");
         }
@@ -286,12 +275,7 @@ pub async fn refresh_connected(app: AppHandle) -> Result<Snapshot, String> {
     let mut store = storage::load(&app)?;
 
     if let Some(steam_conn) = store.steam.clone() {
-        let mut games = steam::import_local_installs();
-        if let Some(key) = steam_conn.api_key.as_deref().filter(|k| !k.is_empty()) {
-            if let Ok(owned) = steam::import_owned_games(&steam_conn.steam_id, key).await {
-                games = owned;
-            }
-        }
+        let games = steam::import_library(&steam_conn.steam_id, steam_conn.api_key.as_deref()).await;
         store.replace_platform_games("steam", games);
         store.mark_imported("steam");
     }

@@ -14,6 +14,8 @@ pub struct Game {
     pub epic_app_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub launch_uri: Option<String>,
+    #[serde(default)]
+    pub installed: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -150,13 +152,7 @@ impl AppStore {
                     })
                     .unwrap_or_default(),
                 game_count: steam_count,
-                needs_action: self.steam.as_ref().and_then(|s| {
-                    if s.api_key.as_deref().unwrap_or("").is_empty() {
-                        Some("Add a Steam Web API key to import your full owned library.".into())
-                    } else {
-                        None
-                    }
-                }),
+                needs_action: None,
             },
             epic: AccountStatus {
                 connected: self.epic.is_some(),

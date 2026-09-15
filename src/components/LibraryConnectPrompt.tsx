@@ -30,7 +30,7 @@ export function LibraryConnectPrompt({
       : provider === "psn"
         ? "This is your first PlayStation sign-in. Import your PSN titles into VAULT now?"
         : provider === "steam"
-          ? "Steam signed you in. Import locally installed Steam games now? Add a Steam Web API key later in Manage accounts for your full owned library."
+          ? "Steam signed you in. Import your full Steam library now, including games that are not installed on this PC?"
           : "Google signed you in. Connect Epic or PlayStation to import your real game shelf.";
 
   return (

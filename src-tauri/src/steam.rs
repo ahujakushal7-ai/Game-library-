@@ -1,4 +1,5 @@
 use crate::models::Game;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -174,6 +175,51 @@ fn extract_xml_tag(xml: &str, tag: &str) -> Option<String> {
     Some(xml[start..end].trim().to_string())
 }
 
+pub async fn import_library(steam_id: &str, api_key: Option<&str>) -> Vec<Game> {
+    let local = import_local_installs();
+    let installed_ids: HashSet<String> = local
+        .iter()
+        .filter_map(|game| game.steam_app_id.clone())
+        .collect();
+
+    let mut owned = Vec::new();
+    if let Some(key) = api_key.filter(|key| !key.is_empty()) {
+        if let Ok(games) = import_owned_games(steam_id, key).await {
+            owned = games;
+        }
+    }
+    if owned.is_empty() {
+        if let Ok(games) = import_community_games(steam_id).await {
+            owned = games;
+        }
+    }
+
+    if owned.is_empty() {
+        return local
+            .into_iter()
+            .map(|mut game| {
+                game.installed = true;
+                game
+            })
+            .collect();
+    }
+
+    let mut by_id: HashMap<String, Game> = HashMap::new();
+    for mut game in owned {
+        let app_id = game.steam_app_id.clone().unwrap_or_default();
+        game.installed = installed_ids.contains(&app_id);
+        by_id.insert(game.id.clone(), game);
+    }
+    for mut game in local {
+        game.installed = true;
+        by_id.entry(game.id.clone()).or_insert(game);
+    }
+
+    let mut games: Vec<Game> = by_id.into_values().collect();
+    games.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+    games
+}
+
 pub async fn import_owned_games(steam_id: &str, api_key: &str) -> Result<Vec<Game>, String> {
     let url = format!(
         "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={}&steamid={}&include_appinfo=1&include_played_free_games=1&format=json",
@@ -220,9 +266,59 @@ pub async fn import_owned_games(steam_id: &str, api_key: &str) -> Result<Vec<Gam
                 steam_app_id: Some(app_id),
                 epic_app_name: None,
                 launch_uri: None,
+                installed: false,
             })
         })
         .collect())
+}
+
+async fn import_community_games(steam_id: &str) -> Result<Vec<Game>, String> {
+    let url = format!("https://steamcommunity.com/profiles/{steam_id}/games?tab=all&xml=1");
+    let xml = reqwest::Client::new()
+        .get(url)
+        .header(
+            "User-Agent",
+            "Mozilla/5.0 (compatible; VAULT/0.1; +https://github.com/ahujakushal7-ai/Game-library-)",
+        )
+        .send()
+        .await
+        .map_err(|e| format!("Steam library request failed: {e}"))?
+        .text()
+        .await
+        .map_err(|e| format!("Steam library response was invalid: {e}"))?;
+
+    if xml.to_ascii_lowercase().contains("this profile is private") {
+        return Err("Steam game details are private. Set Game details to Public on your Steam profile, or add a Web API key.".into());
+    }
+
+    let games: Vec<Game> = xml
+        .split("<game>")
+        .skip(1)
+        .filter_map(|block| {
+            let chunk = block.split("</game>").next()?;
+            let app_id = extract_xml_tag(chunk, "appID").filter(|id| !id.is_empty())?;
+            if app_id == "228980" {
+                return None;
+            }
+            let title = extract_xml_tag(chunk, "name").unwrap_or_else(|| format!("Steam {app_id}"));
+            Some(Game {
+                id: format!("steam-{app_id}"),
+                title,
+                platform: "steam".into(),
+                cover_url: steam_cover(&app_id),
+                last_played: None,
+                steam_app_id: Some(app_id),
+                epic_app_name: None,
+                launch_uri: None,
+                installed: false,
+            })
+        })
+        .collect();
+
+    if games.is_empty() {
+        return Err("Steam returned no owned games from this profile.".into());
+    }
+    Ok(games)
 }
 
 pub fn import_local_installs() -> Vec<Game> {
@@ -315,6 +411,7 @@ fn parse_acf(path: &Path) -> Option<Game> {
         steam_app_id: Some(app_id),
         epic_app_name: None,
         launch_uri: None,
+        installed: true,
     })
 }
 

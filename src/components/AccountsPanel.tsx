@@ -25,7 +25,7 @@ export function AccountsPanel(props: AccountsPanelProps) {
     <section className="mb-2 grid gap-4 lg:grid-cols-3">
       <AccountCard
         title="Steam"
-        description="Sign in with Steam OpenID, then add your own Web API key to import the full owned library."
+        description="Sign in with Steam OpenID to import your full owned library. Installed games are marked; uninstalled titles stay on the shelf. A Web API key is only needed if your game details are private."
         status={props.snapshot.steam}
         busy={props.busy === "steam"}
         onConnect={props.onSteamLogin}

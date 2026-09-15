@@ -82,7 +82,7 @@ export async function steamLogin(): Promise<Snapshot> {
       connected: true,
       label: "Steam Player",
       gameCount: games.length,
-      needsAction: "Add a Steam Web API key in Manage accounts to import the full owned library.",
+      needsAction: null,
     };
     snapshot.games = [...snapshot.games.filter((game) => game.platform !== "steam"), ...games];
     snapshot.pendingLibraryPrompt = "steam";

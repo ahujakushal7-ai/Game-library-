@@ -222,6 +222,7 @@ pub async fn import_titles(access_token: &str) -> Result<Vec<Game>, String> {
                 steam_app_id: None,
                 epic_app_name: None,
                 launch_uri: None,
+                installed: false,
             });
         }
 
